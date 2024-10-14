@@ -41,6 +41,7 @@ public class PaymentService {
 				.paymentMethod(upiPaymentTransactionBean.getUpiPaymentMethod())
 				.paymentStatus(upiPaymentTransactionBean.getUpiPaymentStatus())
 				.upiDetailsEntity(upiDetailsEntitySaved)
+				.paymentAmount(upiPaymentTransactionBean.getUpiPaymentAmount())
 				.upiPaymentRemark(upiPaymentTransactionBean.getUpiPaymentRemark())
 				.createdAt(new Timestamp(System.currentTimeMillis()))
 				.build();
