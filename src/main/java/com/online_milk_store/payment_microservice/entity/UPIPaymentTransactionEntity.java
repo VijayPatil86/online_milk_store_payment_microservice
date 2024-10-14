@@ -47,4 +47,7 @@ public class UPIPaymentTransactionEntity {
 
 	@Column(name = "REMARK")
 	private String upiPaymentRemark;
+
+	@Column(name = "PAYMENT_AMOUNT")
+	private float paymentAmount;
 }
