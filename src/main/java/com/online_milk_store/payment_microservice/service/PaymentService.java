@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.online_milk_store.payment_microservice.bean.UPIPaymentTransactionBean;
+import com.online_milk_store.payment_microservice.bean.UpiPaymentInfoBean;
 import com.online_milk_store.payment_microservice.entity.UPIDetailsEntity;
 import com.online_milk_store.payment_microservice.entity.UPIPaymentTransactionEntity;
 import com.online_milk_store.payment_microservice.repository.PaymentTransactionRepository;
@@ -26,15 +27,16 @@ public class PaymentService {
 	@Autowired
 	private PaymentTransactionRepository paymentTransactionRepository;
 
-	public void processUPIPayment(UPIPaymentTransactionBean upiPaymentTransactionBean) {
+	public UpiPaymentInfoBean createUPIPaymentData(UPIPaymentTransactionBean upiPaymentTransactionBean) {
 		LOGGER.debug("PaymentService.processUPIPayment() --- START");
 		LOGGER.info("PaymentService.processUPIPayment() --- upiPaymentTransactionBean: " + upiPaymentTransactionBean);
 		UPIDetailsEntity upiDetailsEntitySaved = getOrSaveUPIDetailsEntity(upiPaymentTransactionBean.getUpiId());
-		savePayment(upiPaymentTransactionBean, upiDetailsEntitySaved);
+		UpiPaymentInfoBean upiPaymentInfoBean = savePayment(upiPaymentTransactionBean, upiDetailsEntitySaved);
 		LOGGER.debug("PaymentService.processUPIPayment() --- END");
+		return upiPaymentInfoBean;
 	}
 
-	private void savePayment(UPIPaymentTransactionBean upiPaymentTransactionBean, UPIDetailsEntity upiDetailsEntitySaved) {
+	private UpiPaymentInfoBean savePayment(UPIPaymentTransactionBean upiPaymentTransactionBean, UPIDetailsEntity upiDetailsEntitySaved) {
 		LOGGER.debug("PaymentService.savePayment() --- START");
 		UPIPaymentTransactionEntity upiPaymentTransactionEntity = UPIPaymentTransactionEntity.builder()
 				.orderNumber(upiPaymentTransactionBean.getOrderNumber())
@@ -48,7 +50,14 @@ public class PaymentService {
 		LOGGER.info("PaymentService.savePayment() --- before save - upiPaymentTransactionEntity: " + upiPaymentTransactionEntity);
 		UPIPaymentTransactionEntity upiPaymentTransactionEntitySaved = paymentTransactionRepository.save(upiPaymentTransactionEntity);
 		LOGGER.info("PaymentService.savePayment() --- after save - upiPaymentTransactionEntitySaved: " + upiPaymentTransactionEntitySaved);
+		UpiPaymentInfoBean upiPaymentInfoBean = UpiPaymentInfoBean.builder()
+				.upiId(upiDetailsEntitySaved.getUpiId())
+				.amount(upiPaymentTransactionBean.getUpiPaymentAmount())
+				.payerTransactionTimestamp(upiPaymentTransactionEntitySaved.getCreatedAt().toString())
+				.payerTransactionId(upiPaymentTransactionEntity.getTransactionId())
+				.build();
 		LOGGER.debug("PaymentService.savePayment() --- END");
+		return upiPaymentInfoBean;
 	}
 
 	private UPIDetailsEntity getOrSaveUPIDetailsEntity(String upiId) {
