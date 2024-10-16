@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.online_milk_store.payment_microservice.bean.UPIPaymentTransactionBean;
+import com.online_milk_store.payment_microservice.bean.UpiPaymentInfoBean;
+import com.online_milk_store.payment_microservice.feign_client.UpiNPCLServiceClient;
 import com.online_milk_store.payment_microservice.service.PaymentService;
 
 @RestController
@@ -21,11 +23,15 @@ public class PaymentController {
 	@Autowired
 	private PaymentService paymentService;
 
+	@Autowired
+	private UpiNPCLServiceClient upiNPCLServiceClient;
+
 	@PostMapping(path = "/upi-payment")
 	public ResponseEntity<Void> processUPIPayment(@RequestBody UPIPaymentTransactionBean upiPaymentTransactionBean) {
 		LOGGER.debug("PaymentController.processUPIPayment() --- START");
 		LOGGER.info("PaymentController.processUPIPayment() --- upiPaymentTransactionBean: " + upiPaymentTransactionBean);
-		paymentService.processUPIPayment(upiPaymentTransactionBean);
+		UpiPaymentInfoBean upiPaymentInfoBean = paymentService.createUPIPaymentData(upiPaymentTransactionBean);
+		upiNPCLServiceClient.requestPaymentUpiNPCL(upiPaymentInfoBean);
 		LOGGER.debug("PaymentController.processUPIPayment() --- END");
 		return null;
 	}
